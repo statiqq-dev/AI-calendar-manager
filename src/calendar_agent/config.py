@@ -10,11 +10,10 @@ from pathlib import Path
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Корень проекта: .../AI-agent (config.py -> calendar_agent -> src -> AI-agent).
+# Корень проекта (config.py -> calendar_agent -> src -> корень).
 # Путь к .env считаем от файла, а не от текущей папки: так .env найдётся,
 # из какой бы директории ты ни запускал проект.
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-print(PROJECT_ROOT)
 
 
 class Settings(BaseSettings):
@@ -27,6 +26,8 @@ class Settings(BaseSettings):
     # Имена полей = имена переменных в .env (регистр не важен): MODEL_NAME -> model_name
     model_name: str = "qwen3:8b"
     model_provider: str = "ollama"
+    # 0 = максимально предсказуемые ответы, то что нужно агенту
+    model_temperature: float = 0.0
     # Ключ API: для Ollama не нужен, пригодится для Claude.
     # SecretStr не покажет значение в print/логах; достать: settings.llm_key.get_secret_value()
     llm_key: SecretStr | None = None

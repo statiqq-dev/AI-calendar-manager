@@ -1,35 +1,18 @@
-"""Этап 0: подключение к модели и первый вызов."""
+"""Точка входа: задаём агенту вопрос и печатаем всю цепочку сообщений."""
 
-from langchain.chat_models import init_chat_model
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage
 
-from calendar_agent.config import settings
+from calendar_agent.AI.agent import build_agent
 
-
-def build_model() -> BaseChatModel:
-    """Создаёт объект чат-модели."""
-    return init_chat_model(
-        model=settings.model_name,
-        model_provider=settings.model_provider,
-        temperature=0,     # 0 = максимально предсказуемые ответы, то что нужно агенту
-        reasoning=False,   # параметр ChatOllama: отключает "размышления" qwen3 (<think>...)
-    )
+QUESTION = "Какой день недели будет через 10 дней?"
 
 
 def main() -> None:
-    model = build_model()
+    agent = build_agent()
+    result = agent.invoke({"messages": [HumanMessage(QUESTION)]})
 
-    messages = [
-        SystemMessage("Ты модель, которая всегда мяукает"),
-        HumanMessage("Привет"),
-    ]
-
-    response: AIMessage = model.invoke(messages)
-
-    print("CONTENT:", response.content)
-    print("USAGE:  ", response.usage_metadata)
-    print("RAW:    ", repr(response))
+    for message in result["messages"]:
+        message.pretty_print()
 
 
 if __name__ == "__main__":

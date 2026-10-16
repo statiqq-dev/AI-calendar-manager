@@ -1,7 +1,7 @@
 [project]
 name = "calendar-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI-агент для управления календарём macOS на LangChain"
 readme = "README.md"
 authors = [
     { name = "german_sd", email = "stropus.gd@gmail.com" }
