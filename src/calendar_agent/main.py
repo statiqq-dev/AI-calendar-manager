@@ -2,7 +2,7 @@
 
 from langchain_core.messages import HumanMessage
 
-from calendar_agent.AI.agent import build_agent
+from calendar_agent.ai.agent import build_agent
 
 QUESTION = "Какой день недели будет через 10 дней?"
 

@@ -4,8 +4,8 @@ from langchain.agents import create_agent
 from langchain_core.language_models import BaseChatModel
 from langgraph.graph.state import CompiledStateGraph
 
-from calendar_agent.AI.llm import build_model
-from calendar_agent.AI.tools import TOOLS
+from calendar_agent.ai.llm import build_model
+from calendar_agent.ai.tools import TOOLS
 
 SYSTEM_PROMPT = """\
 Ты ассистент, который помогает управлять календарём пользователя.
