@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-calendar-agent = "calendar_agent.main:main"
+calendar-agent = "calendar_agent.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.13.1,<0.14.0"]
