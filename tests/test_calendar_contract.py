@@ -12,10 +12,9 @@ from collections.abc import Iterator
 from datetime import UTC, datetime
 
 import pytest
-from pydantic import ValidationError
 
 from calendar_agent.calendar.base import CalendarService
-from calendar_agent.calendar.exceptions import EventNotFoundError
+from calendar_agent.calendar.exceptions import EventNotFoundError, InvalidEventError
 from calendar_agent.calendar.fake import FakeCalendarService
 
 TEST_CALENDAR_NAME = "AI Agent Tests"
@@ -99,13 +98,40 @@ def test_delete_unknown_event_raises(calendar):
 
 @pytest.mark.parametrize("end_hour", [13, 14], ids=["end-before-start", "end-equals-start"])
 def test_event_must_end_after_start(calendar, end_hour):
-    with pytest.raises(ValidationError):
+    with pytest.raises(InvalidEventError):
         calendar.create_event("Встреча", at(14), at(end_hour))
 
 
 def test_event_without_timezone_is_rejected(calendar):
-    with pytest.raises(ValidationError):
+    with pytest.raises(InvalidEventError):
         calendar.create_event("Встреча", datetime(2026, 10, 16, 14), datetime(2026, 10, 16, 15))
+
+
+# --- Изменение ---
+
+def test_updated_fields_change_and_others_stay(calendar):
+    created = calendar.create_event("Встреча", at(14), at(15), notes="Офис")
+
+    updated = calendar.update_event(created.id, title="Созвон", start=at(16), end=at(17))
+
+    assert (updated.id, updated.title, updated.start, updated.end, updated.notes) == (
+        created.id, "Созвон", at(16), at(17), "Офис"
+    )
+    assert calendar.get_event_by_id(created.id) == updated
+
+
+def test_update_with_end_before_start_raises_and_keeps_event(calendar):
+    created = calendar.create_event("Встреча", at(14), at(15))
+
+    with pytest.raises(InvalidEventError):
+        calendar.update_event(created.id, start=at(16))
+
+    assert calendar.get_event_by_id(created.id) == created
+
+
+def test_update_unknown_event_raises(calendar):
+    with pytest.raises(EventNotFoundError):
+        calendar.update_event("нет-такого-id", title="Созвон")
 
 
 # --- Поиск по id ---

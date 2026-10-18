@@ -37,20 +37,24 @@ class MacCalendarService(CalendarService):
     def create_event(
         self, title: str, start: datetime, end: datetime, notes: str | None = None
     ) -> Event:
-        # Проверяем данные теми же правилами Pydantic, что и фейк, до похода в систему.
-        draft = Event(id="new", title=title, start=start, end=end, notes=notes)
-
+        # Проверяем данные теми же правилами, что и фейк, до похода в систему.
+        draft = Event.checked(id="new", title=title, start=start, end=end, notes=notes)
         ek_event = EKEvent.eventWithEventStore_(self._store)
         ek_event.setCalendar_(self._calendar)
-        ek_event.setTitle_(draft.title)
-        ek_event.setStartDate_(_to_nsdate(draft.start))
-        ek_event.setEndDate_(_to_nsdate(draft.end))
-        ek_event.setNotes_(draft.notes)
+        return self._save(ek_event, draft)
 
-        saved, error = self._store.saveEvent_span_commit_error_(ek_event, EKSpanThisEvent, True, None)
-        if not saved:
-            raise CalendarError(f"Календарь macOS не сохранил событие: {error.localizedDescription()}")
-        return _to_event(ek_event)
+    def update_event(
+        self,
+        event_id: str,
+        *,
+        title: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        notes: str | None = None,
+    ) -> Event:
+        ek_event = self._find_ek_event(event_id)
+        draft = _to_event(ek_event).with_changes(title=title, start=start, end=end, notes=notes)
+        return self._save(ek_event, draft)
 
     def delete_event(self, event_id: str) -> None:
         ek_event = self._find_ek_event(event_id)
@@ -60,6 +64,17 @@ class MacCalendarService(CalendarService):
 
     def get_event_by_id(self, event_id: str) -> Event:
         return _to_event(self._find_ek_event(event_id))
+
+    def _save(self, ek_event: Any, draft: Event) -> Event:
+        """Переносит поля из проверенного Event в объект EventKit и сохраняет его."""
+        ek_event.setTitle_(draft.title)
+        ek_event.setStartDate_(_to_nsdate(draft.start))
+        ek_event.setEndDate_(_to_nsdate(draft.end))
+        ek_event.setNotes_(draft.notes)
+        saved, error = self._store.saveEvent_span_commit_error_(ek_event, EKSpanThisEvent, True, None)
+        if not saved:
+            raise CalendarError(f"Календарь macOS не сохранил событие: {error.localizedDescription()}")
+        return _to_event(ek_event)
 
     def _find_calendar(self, name: str) -> Any:
         for ek_calendar in self._store.calendarsForEntityType_(EKEntityTypeEvent):

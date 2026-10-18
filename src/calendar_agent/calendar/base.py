@@ -20,7 +20,25 @@ class CalendarService(ABC):
     def create_event(
         self, title: str, start: datetime, end: datetime, notes: str | None = None
     ) -> Event:
-        """Создаёт событие в календаре и возвращает его с присвоенным id."""
+        """Создаёт событие и возвращает его с присвоенным id.
+
+        Если данные неверные (конец не позже начала, нет часового пояса), бросает InvalidEventError.
+        """
+
+    @abstractmethod
+    def update_event(
+        self,
+        event_id: str,
+        *,
+        title: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        notes: str | None = None,
+    ) -> Event:
+        """Меняет переданные поля события (None — оставить как есть) и возвращает его.
+
+        Если события нет, бросает EventNotFoundError, если данные неверные — InvalidEventError.
+        """
 
     @abstractmethod
     def delete_event(self, event_id: str) -> None:

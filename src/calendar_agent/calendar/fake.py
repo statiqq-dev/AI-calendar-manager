@@ -23,8 +23,21 @@ class FakeCalendarService(CalendarService):
     def create_event(
         self, title: str, start: datetime, end: datetime, notes: str | None = None
     ) -> Event:
-        event = Event(id=str(uuid4()), title=title, start=start, end=end, notes=notes)
+        event = Event.checked(id=str(uuid4()), title=title, start=start, end=end, notes=notes)
         self._events[event.id] = event
+        return event
+
+    def update_event(
+        self,
+        event_id: str,
+        *,
+        title: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+        notes: str | None = None,
+    ) -> Event:
+        event = self.get_event_by_id(event_id).with_changes(title=title, start=start, end=end, notes=notes)
+        self._events[event_id] = event
         return event
 
     def delete_event(self, event_id: str) -> None:
