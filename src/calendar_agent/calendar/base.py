@@ -25,3 +25,7 @@ class CalendarService(ABC):
     @abstractmethod
     def delete_event(self, event_id: str) -> None:
         """Удаляет событие по id. Если его нет, бросает EventNotFoundError."""
+
+    @abstractmethod
+    def get_event_by_id(self, event_id: str) -> Event:
+        """Возвращает событие по id. Если его нет, бросает EventNotFoundError."""

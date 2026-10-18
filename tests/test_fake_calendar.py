@@ -78,3 +78,16 @@ def test_event_must_end_after_start(calendar, end_hour):
 def test_event_without_timezone_is_rejected(calendar):
     with pytest.raises(ValidationError):
         calendar.create_event("Встреча", datetime(2026, 10, 16, 14), datetime(2026, 10, 16, 15))
+
+
+# --- Поиск по id ---
+
+def test_get_event_by_id_returns_event(calendar):
+    created = calendar.create_event("Встреча", at(14), at(15))
+
+    assert calendar.get_event_by_id(created.id) == created
+
+
+def test_get_event_by_id_missing_raises(calendar):
+    with pytest.raises(EventNotFoundError):
+        calendar.get_event_by_id("missing-id")

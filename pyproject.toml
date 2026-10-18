@@ -12,6 +12,7 @@ dependencies = [
     "langchain-ollama>=1.1.0",
     "pydantic>=2.14.1",
     "pydantic-settings>=2.16.0",
+    "pyobjc-framework-eventkit>=12.2.2 ; sys_platform == 'darwin'",
     "python-dotenv>=1.2.4",
 ]
 

@@ -96,4 +96,5 @@ def make_tools(calendar: CalendarService) -> list[BaseTool]:
             return f"Ошибка: {error}. Найди событие через list_events."
         return f"Событие {event_id} удалено."
 
+
     return [get_current_datetime, list_events, create_event, delete_event]

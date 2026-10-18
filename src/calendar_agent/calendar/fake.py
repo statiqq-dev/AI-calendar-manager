@@ -31,3 +31,9 @@ class FakeCalendarService(CalendarService):
         if event_id not in self._events:
             raise EventNotFoundError(event_id)
         del self._events[event_id]
+
+    def get_event_by_id(self, event_id: str) -> Event:
+        try:
+            return self._events[event_id]
+        except KeyError:
+            raise EventNotFoundError(event_id) from None
