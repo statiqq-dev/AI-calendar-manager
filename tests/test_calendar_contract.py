@@ -1,15 +1,24 @@
-"""Тесты календаря в памяти.
+"""Контрактные тесты CalendarService: одни и те же тесты для каждой реализации.
 
-Каждый тест проверяет одно обещание из контракта CalendarService (см. base.py).
+Каждый тест проверяет одно обещание из контракта (см. base.py).
+macOS-вариант трогает настоящий Календарь, поэтому запускается только явно:
+    RUN_MACOS_TESTS=1 uv run pytest
+и только в отдельном пустом календаре TEST_CALENDAR_NAME.
 """
 
+import os
+import sys
+from collections.abc import Iterator
 from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
 
+from calendar_agent.calendar.base import CalendarService
 from calendar_agent.calendar.exceptions import EventNotFoundError
 from calendar_agent.calendar.fake import FakeCalendarService
+
+TEST_CALENDAR_NAME = "AI Agent Tests"
 
 
 def at(hour: int, day: int = 16) -> datetime:
@@ -17,10 +26,29 @@ def at(hour: int, day: int = 16) -> datetime:
     return datetime(2026, 10, day, hour, tzinfo=UTC)
 
 
-@pytest.fixture
-def calendar() -> FakeCalendarService:
-    """Каждый тест получает новый пустой календарь."""
-    return FakeCalendarService()
+@pytest.fixture(params=["fake", "macos"])
+def calendar(request) -> Iterator[CalendarService]:
+    """Каждый тест получает пустой календарь: сначала фейк, потом macOS."""
+    if request.param == "fake":
+        yield FakeCalendarService()
+    else:
+        yield from macos_calendar()
+
+
+def macos_calendar() -> Iterator[CalendarService]:
+    if sys.platform != "darwin" or os.environ.get("RUN_MACOS_TESTS") != "1":
+        pytest.skip("macOS-календарь: запусти на macOS с RUN_MACOS_TESTS=1")
+    from calendar_agent.calendar.macos import MacCalendarService
+
+    service = MacCalendarService(TEST_CALENDAR_NAME)
+    clear(service)  # вдруг остались события от упавшего прогона
+    yield service
+    clear(service)  # тест не оставляет мусора в настоящем календаре
+
+
+def clear(service: CalendarService) -> None:
+    for event in service.list_events(at(0, day=1), at(0, day=31)):
+        service.delete_event(event.id)
 
 
 def test_created_event_is_listed(calendar):

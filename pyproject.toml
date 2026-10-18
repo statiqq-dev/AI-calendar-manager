@@ -28,3 +28,9 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.17.1",
 ]
+
+[tool.mypy]
+# У PyObjC нет аннотаций типов: объекты EventKit для mypy — Any.
+[[tool.mypy.overrides]]
+module = ["EventKit", "Foundation"]
+ignore_missing_imports = true

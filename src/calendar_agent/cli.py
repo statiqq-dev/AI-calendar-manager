@@ -15,11 +15,24 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 
 from calendar_agent.ai.agent import build_agent
+from calendar_agent.calendar.base import CalendarService
+from calendar_agent.calendar.exceptions import CalendarError
 from calendar_agent.calendar.fake import FakeCalendarService
+from calendar_agent.config import settings
 
 EXIT_COMMANDS = {"выход", "exit", "quit"}
 NEW_CONVERSATION_COMMAND = "/new"
 YES_ANSWERS = {"y", "yes", "д", "да"}
+
+
+def build_calendar() -> CalendarService:
+    """Выбирает реализацию календаря по настройке CALENDAR_BACKEND."""
+    if settings.calendar_backend == "macos":
+        # Импорт внутри функции: PyObjC есть только на macOS, остальным он не нужен.
+        from calendar_agent.calendar.macos import MacCalendarService
+
+        return MacCalendarService(settings.calendar_name)
+    return FakeCalendarService()
 
 
 def new_conversation() -> RunnableConfig:
@@ -58,7 +71,11 @@ def run_turn(agent: CompiledStateGraph, user_input: str, config: RunnableConfig)
 
 
 def main() -> None:
-    calendar = FakeCalendarService()
+    try:
+        calendar = build_calendar()
+    except CalendarError as error:  # нет доступа или нет календаря: понятное сообщение вместо трейсбека
+        print(error)
+        return
     checkpointer = InMemorySaver()
     agent = build_agent(calendar, checkpointer=checkpointer)
     config = new_conversation()

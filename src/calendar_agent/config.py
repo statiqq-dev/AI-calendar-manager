@@ -6,6 +6,7 @@
 """
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -31,6 +32,11 @@ class Settings(BaseSettings):
     # Ключ API: для Ollama не нужен, пригодится для Claude.
     # SecretStr не покажет значение в print/логах; достать: settings.llm_key.get_secret_value()
     llm_key: SecretStr | None = None
+
+    # Какой календарь использовать: "fake" — в памяти, "macos" — Календарь macOS через EventKit.
+    calendar_backend: Literal["fake", "macos"] = "fake"
+    # Агент работает только с этим календарём macOS; создай его в приложении Календарь.
+    calendar_name: str = "AI Agent"
 
 
 # Один объект на всё приложение. Создаётся при первом импорте модуля.

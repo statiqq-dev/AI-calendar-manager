@@ -7,6 +7,7 @@
 from datetime import UTC, datetime
 
 import pytest
+from fakes import FakeModel
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import InMemorySaver
@@ -15,7 +16,6 @@ from langgraph.types import Command
 from calendar_agent.ai.agent import build_agent
 from calendar_agent.calendar.exceptions import EventNotFoundError
 from calendar_agent.calendar.fake import FakeCalendarService
-from fakes import FakeModel
 
 CONFIG: RunnableConfig = {"configurable": {"thread_id": "test"}}
 

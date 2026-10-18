@@ -4,13 +4,13 @@
 а проверяем мы то, что сохранилось в состоянии агента.
 """
 
+from fakes import FakeModel
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import InMemorySaver
 
 from calendar_agent.ai.agent import build_agent
 from calendar_agent.calendar.fake import FakeCalendarService
-from fakes import FakeModel
 
 
 def thread(thread_id: str) -> RunnableConfig:
